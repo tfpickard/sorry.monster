@@ -1,0 +1,23 @@
+{
+  "name": "sorry-monster",
+  "version": "1.0.0",
+  "description": "Apology-as-a-Service (AaaS) - LLM-powered apology generation platform",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:frontend": "cd apps/frontend && npm run dev",
+    "dev:api": "cd apps/api && uvicorn app.main:app --reload --port 8083",
+    "dev:oops": "cd apps/oops && uvicorn oops.app:app --reload --port 8085",
+    "build:frontend": "cd apps/frontend && npm run build",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

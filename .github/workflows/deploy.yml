@@ -1,0 +1,84 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  TARGET_DIR: ${{ secrets.TARGET_DIR }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build Frontend (SSR)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || '22' }}
+
+      - name: Build frontend
+        run: |
+          cd apps/frontend
+          npm ci
+          npm run build
+
+      # Build Backend artifacts
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ vars.PY_VERSION || '3.12' }}
+
+      - name: Prepare backend
+        run: |
+          python -m pip install --upgrade pip
+          pip wheel -w dist apps/api || true
+
+      # Sync files to server
+      - name: Deploy files via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: |
+            apps/
+            docker-compose.yml
+            nginx/
+          remote_path: ${{ env.TARGET_DIR }}
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      # Apply environment and restart services
+      - name: Apply environment and restart services
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd "${{ env.TARGET_DIR }}"
+
+            # Write .env file
+            echo "${{ secrets.ENV_FILE_B64 }}" | base64 -d > .env
+            chmod 600 .env
+
+            # Pull and restart Docker services
+            docker compose pull || true
+            docker compose up -d --build
+
+            # Install NGINX configs
+            sudo ln -sf "${{ env.TARGET_DIR }}/nginx/sorry.monster.conf" /etc/nginx/sites-available/sorry.monster.conf
+            sudo ln -sf "${{ env.TARGET_DIR }}/nginx/oops.ninja.conf" /etc/nginx/sites-available/oops.ninja.conf
+            sudo ln -sf /etc/nginx/sites-available/sorry.monster.conf /etc/nginx/sites-enabled/sorry.monster.conf
+            sudo ln -sf /etc/nginx/sites-available/oops.ninja.conf /etc/nginx/sites-enabled/oops.ninja.conf
+
+            # Test and reload NGINX
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            echo "✅ Deployment complete!"

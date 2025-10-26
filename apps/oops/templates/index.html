@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>oops.ninja - Instant Apology Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gradient-to-br from-orange-50 to-red-50 min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-3xl">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h1 class="text-6xl font-bold mb-4 text-orange-600">oops.ninja</h1>
+        <p class="text-xl text-slate-600 mb-2">I'm Feeling Lucky</p>
+        <p class="text-sm text-slate-500">
+          Instant apology generation • No account needed • Minimal controls
+        </p>
+      </div>
+
+      <!-- Form -->
+      <div
+        id="form-container"
+        class="bg-white rounded-2xl shadow-2xl p-8"
+      >
+        <form id="lucky-form" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium mb-2">What happened? *</label>
+            <input
+              type="text"
+              name="summary"
+              required
+              class="w-full px-4 py-2 border rounded-lg"
+              placeholder="Brief summary (e.g., 'Database outage')"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Details *</label>
+            <textarea
+              name="what"
+              required
+              rows="3"
+              class="w-full px-4 py-2 border rounded-lg"
+              placeholder="What exactly happened?"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Harm caused *</label>
+            <textarea
+              name="harm"
+              required
+              rows="2"
+              class="w-full px-4 py-2 border rounded-lg"
+              placeholder="What harm or impact resulted?"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Severity</label>
+            <select name="severity" class="w-full px-4 py-2 border rounded-lg">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-orange-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-orange-700 transition"
+          >
+            I'm Feeling Lucky!
+          </button>
+        </form>
+      </div>
+
+      <!-- Results (hidden initially) -->
+      <div id="results-container" class="hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 space-y-8">
+          <!-- Risk Bar -->
+          <div class="text-center">
+            <div class="text-sm text-slate-600 mb-2">Risk Level</div>
+            <div class="flex space-x-4 justify-center">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-red-600" id="pr-risk"></div>
+                <div class="text-xs text-slate-500">PR Risk</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-green-600" id="sincerity"></div>
+                <div class="text-xs text-slate-500">Sincerity</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Twitter -->
+          <div>
+            <h3 class="text-xl font-bold mb-4">Twitter</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold text-green-600">✓ Useful</span>
+                  <button
+                    onclick="copy('twitter-useful')"
+                    class="text-xs bg-slate-200 px-3 py-1 rounded hover:bg-slate-300"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div
+                  id="twitter-useful"
+                  class="bg-slate-50 p-4 rounded-lg text-sm"
+                ></div>
+              </div>
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold text-purple-600">☆ Pointless</span>
+                  <button
+                    onclick="copy('twitter-pointless')"
+                    class="text-xs bg-slate-200 px-3 py-1 rounded hover:bg-slate-300"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div
+                  id="twitter-pointless"
+                  class="bg-slate-50 p-4 rounded-lg text-sm"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <h3 class="text-xl font-bold mb-4">Customer Email</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold text-green-600">✓ Useful</span>
+                  <button
+                    onclick="copy('email-useful')"
+                    class="text-xs bg-slate-200 px-3 py-1 rounded hover:bg-slate-300"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div
+                  id="email-useful"
+                  class="bg-slate-50 p-4 rounded-lg text-sm whitespace-pre-wrap"
+                ></div>
+              </div>
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold text-purple-600">☆ Pointless</span>
+                  <button
+                    onclick="copy('email-pointless')"
+                    class="text-xs bg-slate-200 px-3 py-1 rounded hover:bg-slate-300"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div
+                  id="email-pointless"
+                  class="bg-slate-50 p-4 rounded-lg text-sm whitespace-pre-wrap"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center pt-6 border-t">
+            <button
+              onclick="reset()"
+              class="bg-slate-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-700"
+            >
+              Generate Another
+            </button>
+            <p class="text-xs text-slate-500 mt-4">
+              Want more control?{" "}
+              <a href="https://sorry.monster" class="text-blue-600 hover:underline"
+                >Try sorry.monster</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading-container" class="hidden text-center py-12">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-600 mx-auto"></div>
+        <p class="text-slate-600 mt-4">Generating apologies...</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center mt-12 text-sm text-slate-500">
+        <p>
+          Powered by GPT-4 • Rate limited • Anonymous allowed •
+          <a href="https://sorry.monster" class="text-blue-600 hover:underline"
+            >Full version</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("lucky-form");
+      const formContainer = document.getElementById("form-container");
+      const resultsContainer = document.getElementById("results-container");
+      const loadingContainer = document.getElementById("loading-container");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Show loading
+        formContainer.classList.add("hidden");
+        loadingContainer.classList.remove("hidden");
+
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch("/lucky", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Generation failed");
+          }
+
+          const data = await response.json();
+
+          // Populate results
+          document.getElementById("pr-risk").textContent =
+            (data.risk.pr_risk * 100).toFixed(0) + "%";
+          document.getElementById("sincerity").textContent =
+            (data.risk.sincerity * 100).toFixed(0) + "%";
+
+          document.getElementById("twitter-useful").textContent = data.twitter.useful;
+          document.getElementById("twitter-pointless").textContent = data.twitter.pointless;
+          document.getElementById("email-useful").textContent = data.customer_email.useful;
+          document.getElementById("email-pointless").textContent =
+            data.customer_email.pointless;
+
+          // Show results
+          loadingContainer.classList.add("hidden");
+          resultsContainer.classList.remove("hidden");
+        } catch (error) {
+          alert("Failed to generate apologies. Please try again.");
+          loadingContainer.classList.add("hidden");
+          formContainer.classList.remove("hidden");
+        }
+      });
+
+      function copy(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+      }
+
+      function reset() {
+        resultsContainer.classList.add("hidden");
+        formContainer.classList.remove("hidden");
+        form.reset();
+      }
+    </script>
+  </body>
+</html>

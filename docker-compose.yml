@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  sorry_frontend:
+    build: ./apps/frontend
+    env_file: .env
+    ports:
+      - "127.0.0.1:8082:8082"
+    restart: unless-stopped
+    depends_on:
+      - sorry_api
+      - redis
+    environment:
+      - PORT=8082
+      - NEXT_PUBLIC_API_URL=https://sorry.monster/api
+    command: ["node", "server.js"]
+
+  sorry_api:
+    build: ./apps/api
+    env_file: .env
+    ports:
+      - "127.0.0.1:8083:8083"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - PORT=8083
+      - HOST=127.0.0.1
+    command: ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8083"]
+
+  oops_service:
+    build: ./apps/oops
+    env_file: .env
+    ports:
+      - "127.0.0.1:8085:8085"
+    restart: unless-stopped
+    depends_on:
+      - sorry_api
+    environment:
+      - PORT=8085
+      - API_URL=http://sorry_api:8083
+    command: ["uvicorn", "oops.app:app", "--host", "127.0.0.1", "--port", "8085"]
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: sorry
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: sorrydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    driver: bridge
