@@ -27,13 +27,13 @@ jobs:
         with:
           node-version: ${{ needs.setup.outputs.node }}
       - name: Install dependencies
-        run: npm ci --prefix apps/frontend
+        run: npm ci
       - name: Lint
-        run: npm run lint --prefix apps/frontend
+        run: npm run lint -w apps/frontend
       - name: Test
-        run: npm test --prefix apps/frontend --if-present
+        run: npm test -w apps/frontend --if-present
       - name: Build
-        run: npm run build --prefix apps/frontend
+        run: npm run build -w apps/frontend
 
   build-backend:
     needs: setup
@@ -89,9 +89,9 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION || '22' }}
       - name: Install dependencies
-        run: npm ci --prefix apps/frontend
+        run: npm ci
       - name: Run tests
-        run: npm test --prefix apps/frontend --if-present
+        run: npm test -w apps/frontend --if-present
 
   test-backend:
     runs-on: ubuntu-latest
